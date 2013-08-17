@@ -32,39 +32,6 @@ sub isRaining {
 
 sub getPastWeekRainfall {
   my ( $time ) = @_;
-
-  my ($weekAgoYear, $weekAgoMonth, $weekAgoDay) = &getWeekPrior( $time );
-  my ($dayAgoYear, $dayAgoMonth, $dayAgoDay) = &getDayPrior( $time );
-
-  my $cmd = qq#$command "http://api.wunderground.com/api/# . $sprinklerConfig::apiKey . qq#/history_$dayAgoYear$dayAgoMonth$dayAgoDay/q/# . $sprinklerConfig::weatherLocation . qq#.xml" 2>&1#;
-  my $cmd = qq#$command "http://www.wunderground.com/history/airport/KPTK/$weekAgoYear/$weekAgoMonth/$weekAgoDay/CustomHistory.html?dayend=$dayAgoDay&monthend=$dayAgoMonth&yearend=$dayAgoYear&req_city=NA&req_state=NA&req_statename=NA&format=1"  2>&1#;
-  $DEBUG && print "CMD: $cmd\n";
-  chop(my @history = `$cmd` );
-
-  my $precipitationField = 19;
-  my @fields = split(",", $history[1]);
-  for ( my $i = 0; $i <= $#fields; $i++ ) {
-    $DEBUG && print $i, " - ", $fields[$i], "\n";
-    if ( $fields[$i] =~ /Precip/ ) {
-        $precipitationField = $i;
-        $DEBUG && print "using field: $i\n";
-        last;
-    }
-  }
-  @history = grep(/^20/, @history);
-  @history = grep(/>/, @history);
-  my @rainFall;
-  foreach my $day (reverse @history ) {
-    $DEBUG && print "Line: $day\n";
-    my $rainFall = (split(",", $day))[$precipitationField];
-    $DEBUG && print "Rainfall: $rainFall\n";
-    push @rainFall, $rainFall;
-  }
-  return @rainFall;
-}
-
-sub getNewPastWeekRainfall {
-  my ( $time ) = @_;
   my @rainFall;
   
   for $i ( 1 .. 8 ) {
@@ -78,7 +45,6 @@ sub getNewPastWeekRainfall {
 
 sub getRainfall {
   my ( $time ) = @_;
-  my $DEBUG = 1;
 
   my ($year, $month, $day) = parseDate( $time );
   my $timeStr = sprintf("%04d%02d%02d", $year, $month, $day);

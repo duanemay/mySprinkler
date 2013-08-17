@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-use Test::More tests => 22;
+use Test::More tests => 24;
 use weatherLib;
 use dateLib;
 
@@ -26,11 +26,6 @@ is_deeply( \@actualRainFall, \@expectedRainFall );
 is( getRainfall($julFifth), "0.00" );
 my $julFirst = subtractDays( $julFifth, 4 );
 is( getRainfall($julFirst), 0.18 );
-
-my @actualRainFall = getNewPastWeekRainfall($julFifth);
-@expectedRainFall = ("0.00", "0.00", "0.00", "0.18", "0.00", "0.00", "0.66", "0.33");
-is( $#actualRainFall, 7, "Rainfall: " . join(", ", @pastWeekRainfall) );
-is_deeply( \@actualRainFall, \@expectedRainFall );
 
 is( getAdjustedRainfallCalculation( @expectedRainFall ), 1.17 );
 
