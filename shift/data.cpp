@@ -3,9 +3,9 @@
 #include <wiringPi.h>
 #include <wiringShift.h>
 
-#define SR_CLOCK_PIN  1
-#define SR_DATA_PIN  15
-#define SR_LATCH_PIN  16
+#define SR_CLOCK_PIN  7
+#define SR_DATA_PIN  2
+#define SR_LATCH_PIN  3
 
 int main (int argc, char *argv[] )
 {

@@ -1,6 +1,6 @@
 
 
-alias data="/mnt/Projects/mySprinkler/shift/data"
+alias data="/home/pi/mySprinkler/shift/data"
 alias data-0="data 0"
 alias data-1="data 1"
 alias data-2="data 2"
