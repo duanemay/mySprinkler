@@ -1,19 +1,28 @@
-
 use dateLib;
 use POSIX qw(ceil);
 use sprinklerConfig;
 
-
 my $DEBUG = 0;
 my $command = "/usr/bin/wget --tries=1 -O -";
 
-sub getCurrentConditions {
+sub getCurrentXml {
 
     my $cmd = qq#$command "http://api.wunderground.com/api/# . $sprinklerConfig::apiKey . qq#/conditions/q/# . $sprinklerConfig::weatherLocation . qq#.xml" 2>&1#;
     $DEBUG && print "CMD: $cmd\n";
     chop( my @output = `$cmd` );
-    my $current = (grep {/<weather>/} @output)[0];
-    $DEBUG && print "CURRENT: " . $current . "\n";
+
+    return @output;
+}
+
+sub getCurrentConditions {
+
+    my @output = &getCurrentXml();
+    return &parseCurrentConditions( @output );
+}
+
+sub parseCurrentConditions {
+    my $current = (grep {/<weather>/} @_)[0];
+    $DEBUG && print "CURRENT COND: " . $current . "\n";
     $current =~ s/<[^>]*>//g;
     $current =~ s/^\s*//g;
     $current =~ s/\s*$//g;
@@ -21,6 +30,21 @@ sub getCurrentConditions {
     return $current;
 }
 
+sub getCurrentTempurature {
+
+    my @output = &getCurrentXml();
+    return &parseCurrentTempurature( @output );
+}
+
+sub parseCurrentTempurature {
+    my $current = (grep {/<temp_f>/} @_)[0];
+    $DEBUG && print "CURRENT TEMP: " . $current . "\n";
+    $current =~ s/<[^>]*>//g;
+    $current =~ s/^\s*//g;
+    $current =~ s/\s*$//g;
+
+    return 0 + $current;
+}
 
 sub isRaining {
    my $condition = shift(@_);
