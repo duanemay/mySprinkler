@@ -21,4 +21,10 @@ make sure the log directory exists
 mkdir /home/pi/log
 ```
 
+You can also run the sprinklers if it is hot like this
+```sh
+# run sprinklers to cool down at 6:45PM 
+45 18 * 6,7,8 * (cd /home/pi/mySprinkler && ./coolDown.pl ) &>> /home/pi/log/coolDownSprinkler.log
+```
+
 
