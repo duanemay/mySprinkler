@@ -25,16 +25,14 @@ my $currentTempurature = parseCurrentTempurature(@currentConditionXml);
 if ( $currentTempurature < $sprinklerConfig::coolDownThreshold ) {
     die getDateString($time), " - Temp: $currentTempurature - Cool: No Sprinklers\n"; 
 } 
-print  getDateString($time), " - Current:$currentTempurature\nThreshold: ", $sprinklerConfig::coolDownThreshold;
 
 my $cyclesToWater = 1;
-print getDateString($time), " - Cool Down $cyclesToWater\n";
+print  getDateString($time), " - Current:$currentTempurature > Threshold: ", $sprinklerConfig::coolDownThreshold, " - Cool Down $cyclesToWater\n";
 
-##&cycleSprinklers($cyclesToWater);
+&cycleSprinklers($cyclesToWater);
 
 my $time = time;
 print getDateString($time), " - stopping\n";
-
 
 sub terminationHandler {
   print "Termination Signal Recieved - stopping\n";
