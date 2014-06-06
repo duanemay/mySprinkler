@@ -16,6 +16,9 @@ ok( !isRaining("Cloudy") );
 my $currentConditions = getCurrentConditions();
 isnt( $currentConditions, undef, "getCurrentConditions==$currentConditions");
 
+my $currentTempurature = getCurrentTempurature();
+isnt( $currentTempurature, undef, "getCurrentTempurature==$currentTempurature");
+
 my $julFifth = 1373017410;
 my @actualRainFall = getPastWeekRainfall($julFifth);
 @expectedRainFall = ("0.00", "0.00", "0.00", "0.18", "0.00", "0.00", "0.66", "0.33");
