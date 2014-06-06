@@ -1,11 +1,18 @@
 
-my $DEBUG = 0;
-my $dataApplication = "/mnt/Projects/shift/data";
+use sprinklerConfig;
 
-my $numberZones = 8;
-my @minutesToRunPerZone = (5,5,5,10,10,10,10,10);
+my $DEBUG = 0;
+
 my $secondsPerMinute = 60;
-my $secondsDelayBetweenZones = 5;
+
+
+# Load Config from SprinklerConfig file
+my $numberZones = $sprinklerConfig::numberZones;
+my @minutesToRunPerZone = @sprinklerConfig::minutesToRunPerZone;
+$secondsDelayBetweenZones = $sprinklerConfig::secondsDelayBetweenZones;
+$baseUrl = $sprinklerConfig::baseUrl;
+
+
 
 if ( $DEBUG ) {
   $secondsPerMinute = 2;
@@ -35,9 +42,11 @@ sub turnSprinklersZoneOn()
 {
   my ( $currentZone ) = @_;
 
-  my $binary = 1<<$currentZone;
-  $DEBUG && print "Zone " . ($currentZone + 1) . " => pins: $binary\n";
-  system($dataApplication . " " . $binary);
+  my $secondsToRun = ( $minutesToRunPerZone[$currentZone] * $secondsPerMinute );
+  my $url = $baseUrl . "sn" . ($currentZone + 1) . "=1&t=" . $secondsToRun;
+  $DEBUG && print "Zone " . ($currentZone + 1) . " for $secondsToRun" .
+      " seconds => URL: " . $url . "\n";
+  &runUrl($url);
   $DEBUG && print "Sleeping for " .
       ( $minutesToRunPerZone[$currentZone] * $secondsPerMinute ) .
       " seconds\n";
@@ -46,9 +55,18 @@ sub turnSprinklersZoneOn()
 
 sub turnSprinklersOff()
 {
-  $DEBUG && print "Turn Off\n";
-  system($dataApplication . " 0");
+  my $url = $baseUrl . "cv?pw=&rsn=1";
+  $DEBUG && print "Turn Off => Url: $url\n";
+  &runUrl($url);
+  $DEBUG && print "Delay for " . $secondsDelayBetweenZones . " seconds\n";
   sleep($secondsDelayBetweenZones);
 }
+
+sub runUrl() {
+  my ( $url ) = @_;
+
+  system("(wget -o /dev/null -O /dev/null  \"$url\") &>> ../log/wget.log");
+}
+  
 
 1;
