@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-use Test::More tests => 24;
+use Test::More tests => 25;
 use weatherLib;
 use dateLib;
 
