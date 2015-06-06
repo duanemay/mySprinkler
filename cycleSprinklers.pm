@@ -1,18 +1,13 @@
-
 use sprinklerConfig;
 
 my $DEBUG = 0;
-
 my $secondsPerMinute = 60;
-
 
 # Load Config from SprinklerConfig file
 my $numberZones = $sprinklerConfig::numberZones;
 my @minutesToRunPerZone = @sprinklerConfig::minutesToRunPerZone;
 $secondsDelayBetweenZones = $sprinklerConfig::secondsDelayBetweenZones;
 $baseUrl = $sprinklerConfig::baseUrl;
-
-
 
 if ( $DEBUG ) {
   $secondsPerMinute = 2;
@@ -43,7 +38,7 @@ sub turnSprinklersZoneOn()
   my ( $currentZone ) = @_;
 
   my $secondsToRun = ( $minutesToRunPerZone[$currentZone] * $secondsPerMinute );
-  my $url = $baseUrl . "sn" . ($currentZone + 1) . "=1&t=" . $secondsToRun;
+  my $url = $baseUrl . "sn?sid=" . ($currentZone + 1) . "&set_to=1&set_time=" . $secondsToRun;
   $DEBUG && print "Zone " . ($currentZone + 1) . " for $secondsToRun" .
       " seconds => URL: " . $url . "\n";
   &runUrl($url);
