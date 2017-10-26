@@ -3,6 +3,10 @@
 use Test::More tests => 25;
 use weatherLib;
 use dateLib;
+use sprinklerConfig;
+
+$sprinklerConfig::weatherLocation = "zmw:48375.1.99999";
+
 
 ok( isRaining("Heavy Rain") );
 ok( isRaining("Storm") );
