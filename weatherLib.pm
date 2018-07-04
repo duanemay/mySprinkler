@@ -4,6 +4,7 @@ use sprinklerConfig;
 
 my $DEBUG = 0;
 my $command = "/usr/bin/wget --tries=1 -O -";
+my $saveCommand = "/usr/bin/wget --tries=1 ";
 
 sub getCurrentXml {
 
@@ -12,6 +13,25 @@ sub getCurrentXml {
     chop( my @output = `$cmd` );
 
     return @output;
+}
+
+sub getYesterdayData {
+    my ( $time ) = @_;
+
+    my ($year, $month, $day) = getDayPrior( $time );
+    my $timeStr = sprintf("%04d%02d%02d", $year, $month, $day);
+
+    if ( ! -f "history/$timeStr.json" ) {
+        my $cmd = qq#$saveCommand -O history/$timeStr.json  "http://api.wunderground.com/api/# . $sprinklerConfig::apiKey . qq#/yesterday/q/# . $sprinklerConfig::weatherHistoryLocation . qq#.json" 2>&1#;
+        $DEBUG && print "CMD: $cmd\n";
+        chop( my @output = `$cmd` );
+    }    
+
+    if ( ! -f "history/$timeStr.xml" ) {
+        my $cmd = qq#$saveCommand -O history/$timeStr.xml "http://api.wunderground.com/api/# . $sprinklerConfig::apiKey . qq#/yesterday/q/# . $sprinklerConfig::weatherHistoryLocation . qq#.xml" 2>&1#;
+        $DEBUG && print "CMD: $cmd\n";
+        chop( my @output = `$cmd` );
+    }    
 }
 
 sub getCurrentConditions {
@@ -67,15 +87,53 @@ sub getPastWeekRainfall {
   return @rainFall;
 }
 
+sub getYesterdayTemps {
+  my ( $time ) = @_;
+  $date = subtractDays( $time, 1 );
+  return getTemps( $date );
+}
+
+sub getTemps {
+  my ( $date ) = @_;
+  my ($year, $month, $day) = parseDate( $date );
+  my $timeStr = sprintf("%04d%02d%02d", $year, $month, $day);
+
+  if ( ! -f "history/$timeStr.xml" ) {
+     $DEBUG && warn "NO history for $timeStr, using 0\n";
+     return (0, 0);
+  }
+  open ( FILE, "history/$timeStr.xml" ) || warn "Couldn read from history history/$timeStr.xml\n";
+  chop(my @history = <FILE> );
+  close FILE;
+
+  ## mean, max
+  my @temps = ( 0, 0 );
+  foreach $line ( @history ) {
+    $line =~ s/^\s+|\s+$//g ;
+    ##$DEBUG && print "LINE: $line\n";
+    if ( $line =~ m#<maxtempi>(.*)</maxtempi># ) {
+      $temps[1] = $1;
+    } elsif ( $line =~ m#<meantempi>(.*)</meantempi># ) {
+      $temps[0] = $1;
+    }
+  }
+
+  return @temps;
+}
+
 sub getRainfall {
   my ( $time ) = @_;
 
   my ($year, $month, $day) = parseDate( $time );
   my $timeStr = sprintf("%04d%02d%02d", $year, $month, $day);
 
-  my $cmd = qq#$command "http://api.wunderground.com/api/# . $sprinklerConfig::apiKey . qq#/history_$timeStr/q/# . $sprinklerConfig::weatherLocation . qq#.xml" 2>&1#;
-  $DEBUG && print "CMD: $cmd\n";
-  chop(my @history = `$cmd` );
+  if ( ! -f "history/$timeStr.xml" ) {
+     $DEBUG && warn "NO history for $timeStr, using 0\n";
+     return 0;
+  }
+  open ( FILE, "history/$timeStr.xml" ) || warn "Couldn read from history history/$timeStr.xml\n";
+  chop(my @history = <FILE> );
+  close FILE;
 
   my $summaryLineStart = 0;
   foreach $line ( @history ) {
@@ -116,7 +174,7 @@ sub getAdjustedRainfallCalculation {
   }
 
   my $weekPriorToThreeDaysRainFall = $weekRainFall - $threeDayRainFall;
-  my $calculation = $weekPriorToThreeDaysRainFall + (2 * $threeDayRainFall);
+  my $calculation = ($weekPriorToThreeDaysRainFall / 2) + ($threeDayRainFall);
 
   $DEBUG && print "weekRainFall: " , $weekRainFall, " threeDayRainFall: ", $threeDayRainFall, " weekPriorToThreeDaysRainFall: ", $weekPriorToThreeDaysRainFall, " calculation:", $calculation, "\n";
   return $calculation;
@@ -125,7 +183,7 @@ sub getAdjustedRainfallCalculation {
 sub moreThenEnoughRainfall {
   my ( $actualRainfall ) = @_;
 
-  return ($actualRainfall > 0.75);
+  return ($actualRainfall > 1.00);
 }
 
 sub getCyclesToWater {
@@ -133,6 +191,20 @@ sub getCyclesToWater {
 
   my $cycles = 4 - ceil($adjustedRainfallCalculation / 0.25);
   return $cycles > 0 ? $cycles : 0;
+}
+
+sub adjustedForTempurature {
+  my ( $adjustedRainfallCalculation, $meanTemp, $maxTemp ) = @_;
+  
+  if ( $meanTemp > 73 ) {
+    $adjustedRainfallCalculation -= .2;
+  }
+
+  if ( $maxTemp > 86 ) {
+    $adjustedRainfallCalculation -= .2;
+  }
+ 
+  return $adjustedRainfallCalculation > 0 ? $adjustedRainfallCalculation : 0;
 }
 
 1;

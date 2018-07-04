@@ -3,6 +3,7 @@ package sprinklerConfig;
 # Weather Underground API Key and location
 $apiKey = "ENTER YOUR API KEY HERE";
 $weatherLocation = "ENTER YOUR LOCATION CODE HERE";
+$weatherHistoryLocation = "ENTER STATE/CITY HERE";
 
 # number of zones and nimutes to run per zone (up to 4x to avoid run off)
 # these should match

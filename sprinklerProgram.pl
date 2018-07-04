@@ -11,6 +11,7 @@ $SIG{'SEGV'} = 'terminationHandler';
 $SIG{'SEGV'} = 'terminationHandler';
 
 my $time = time;
+getYesterdayData($time);
 if ( &isOddDay($time) ) {
   die getDateString($time), " -  odd day exiting\n";
 }
@@ -20,9 +21,13 @@ if ( isRaining($currentConditions) ) {
     die getDateString($time), " -  - Rain: No Sprinklers\n";
 } 
 
+my @yesterdayTemps = getYesterdayTemps($time);
 my @pastWeekRainfall = getPastWeekRainfall($time);
-print "Week RainFall: ", join(", ", @pastWeekRainfall), "\n";
 my $adjustedRainfallCalculation = getAdjustedRainfallCalculation( @pastWeekRainfall );
+$adjustedRainfallCalculation = adjustedForTempurature( $adjustedRainfallCalculation, @yesterdayTemps );
+print "Week RainFall: ", join(", ", @pastWeekRainfall), 
+      " Mean/Max Temp: ", join("/", @yesterdayTemps),
+      " calc: ", $adjustedRainfallCalculation, "\n";
 if ( moreThenEnoughRainfall( $adjustedRainfallCalculation ) ) {
     die getDateString($time), " - Wet:  No Sprinklers\n";
 }
@@ -37,6 +42,11 @@ print getDateString($time), " - Watering $cyclesToWater\n";
 my $time = time;
 print getDateString($time), " - stopping\n";
 
+my ($year, $month, $day) = parseDate( $time );
+my $timeStr = sprintf("%04d%02d%02d", $year, $month, $day);
+open( HISTORY, "> history/$timeStr.waterlog" );
+print HISTORY $cyclesToWater, "\n";
+close HISTORY;
 
 sub terminationHandler {
   print "Termination Signal Recieved - stopping\n";
