@@ -12,8 +12,9 @@ This now runs directly on the OSPi (or custom board with matching pins wired to 
 
 Add a line to your crontab like:
 ```sh
-## run sprinklers at 4:30AM May thru October
-30 4 * 5,6,7,8,9,10 * (cd /home/pi/mySprinkler && ./sprinklerProgram.pl ) >> /home/pi/log/sprinkler.log
+# run sprinklers at 4:30AM June thru Mid-Sept
+30 04 * 6,7,8,9 * PERL5LIB=/home/pi/mySprinkler /home/pi/mySprinkler/sprinklerProgram.pl &>> /home/pi/log/sprinkler.log
+30 04 * 9 1-16 PERL5LIB=/home/pi/mySprinkler /home/pi/mySprinkler/sprinklerProgram.pl &>> /home/pi/log/sprinkler.log
 ```
 
 make sure the log directory exists
@@ -24,7 +25,5 @@ mkdir /home/pi/log
 You can also run the sprinklers if it is hot like this
 ```sh
 # run sprinklers to cool down at 6:45PM 
-45 18 * 6,7,8 * (cd /home/pi/mySprinkler && ./coolDown.pl ) &>> /home/pi/log/coolDownSprinkler.log
+45 18 * 6,7,8 * PERL5LIB=/home/pi/mySprinkler /home/pi/mySprinkler/coolDown.pl &>> /home/pi/log/coolDownSprinkler.log
 ```
-
-
