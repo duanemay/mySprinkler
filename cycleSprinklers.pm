@@ -50,7 +50,7 @@ sub turnSprinklersZoneOn()
 
 sub turnSprinklersOff()
 {
-  my $url = $baseUrl . "cv?pw=&rsn=1";
+  my $url = $baseUrl . "cv?rsn=1";
   $DEBUG && print "Turn Off => Url: $url\n";
   &runUrl($url);
   $DEBUG && print "Delay for " . $secondsDelayBetweenZones . " seconds\n";
@@ -60,7 +60,7 @@ sub turnSprinklersOff()
 sub runUrl() {
   my ( $url ) = @_;
 
-  system("(wget -o /dev/null -O /dev/null  \"$url\") &>> ../log/wget.log");
+  system("(wget -o /dev/null -O /dev/null  \"$url\") &>> log/wget.log");
 }
   
 
