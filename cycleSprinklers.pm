@@ -62,6 +62,5 @@ sub runUrl() {
 
   system("(wget -o /dev/null -O /dev/null  \"$url\") &>> log/wget.log");
 }
-  
 
 1;

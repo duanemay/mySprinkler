@@ -25,5 +25,3 @@ sub terminationHandler {
   turnSprinklersOff();
   exit(-10);
 }
-
-__END__

@@ -38,4 +38,3 @@ is_deeply( \@actual, \@expected );
 @actual = getWeekPrior($augTenth);
 @expected = ( 2013, 8, 2 );
 is_deeply( \@actual, \@expected );
-

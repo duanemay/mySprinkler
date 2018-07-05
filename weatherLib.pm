@@ -7,7 +7,6 @@ my $command = "/usr/bin/wget --tries=1 -O -";
 my $saveCommand = "/usr/bin/wget --tries=1 ";
 
 sub getCurrentXml {
-
     my $cmd = qq#$command "http://api.wunderground.com/api/# . $sprinklerConfig::apiKey . qq#/conditions/q/# . $sprinklerConfig::weatherLocation . qq#.xml" 2>&1#;
     $DEBUG && print "CMD: $cmd\n";
     chop( my @output = `$cmd` );
@@ -35,7 +34,6 @@ sub getYesterdayData {
 }
 
 sub getCurrentConditions {
-
     my @output = &getCurrentXml();
     return &parseCurrentConditions( @output );
 }
@@ -51,7 +49,6 @@ sub parseCurrentConditions {
 }
 
 sub getCurrentTempurature {
-
     my @output = &getCurrentXml();
     return &parseCurrentTempurature( @output );
 }
@@ -167,9 +164,7 @@ sub getAdjustedRainfallCalculation {
   foreach my $rainFall ( @rainFall ) {
     $DEBUG && print "Rainfall(day=$dayNumber): $rainFall\n";
     $weekRainFall += $rainFall;
-    if ( $dayNumber < 3 ) {
-        $threeDayRainFall += $rainFall;
-    }
+    ( $dayNumber < 3 ) && ($threeDayRainFall += $rainFall);
     $dayNumber++;
   }
 
@@ -195,25 +190,10 @@ sub getCyclesToWater {
 
 sub adjustedForTempurature {
   my ( $adjustedRainfallCalculation, $meanTemp, $maxTemp ) = @_;
-  
-  if ( $meanTemp > 73 ) {
-    $adjustedRainfallCalculation -= .2;
-  }
 
-  if ( $maxTemp > 86 ) {
-    $adjustedRainfallCalculation -= .2;
-  }
- 
+  ( $meanTemp > 73 ) && ($adjustedRainfallCalculation -= .2);
+  ( $maxTemp > 86 ) && ($adjustedRainfallCalculation -= .2);
   return $adjustedRainfallCalculation > 0 ? $adjustedRainfallCalculation : 0;
 }
 
 1;
-__END__
-my $raining = &raining($current);
-
-print "Current:$current Rainfall:@rainFall week:$weekRainFall >3day:$weekPriorToThreeDaysRainFall 3day:$threeDayRainFall calc:$calculation\n";
-
-
-
-
-
