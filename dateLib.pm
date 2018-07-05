@@ -7,9 +7,9 @@ sub getDateString {
   $DEBUG && print "PASRED(sec,min,hour,mday,month,year,wday,yday,isdst)", join(":", $sec,$min,$hour,$mday,$month,$year,$wday,$yday,$isdst);
   $month += 1;
   $year += 1900;
-  $DEBUG && print " ADJUSTED: $month,$year";
+  $DEBUG && print "  ADJUSTED: $month,$year";
   my $timeStr = sprintf("%04d%02d%02d %02d:%02d", ${year}, $month, ${mday}, $hour, $min);
-  $DEBUG && print " FORMATED: $timeStr\n";
+  $DEBUG && print " FORMATTED: $timeStr\n";
   return $timeStr;
 }
 

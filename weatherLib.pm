@@ -48,12 +48,12 @@ sub parseCurrentConditions {
     return $current;
 }
 
-sub getCurrentTempurature {
+sub getCurrentTemperature {
     my @output = &getCurrentXml();
-    return &parseCurrentTempurature( @output );
+    return &parseCurrentTemperature( @output );
 }
 
-sub parseCurrentTempurature {
+sub parseCurrentTemperature {
     my $current = (grep {/<temp_f>/} @_)[0];
     $DEBUG && print "CURRENT TEMP: " . $current . "\n";
     $current =~ s/<[^>]*>//g;
@@ -99,7 +99,7 @@ sub getTemps {
      $DEBUG && warn "NO history for $timeStr, using 0\n";
      return (0, 0);
   }
-  open ( FILE, "history/$timeStr.xml" ) || warn "Couldn read from history history/$timeStr.xml\n";
+  open ( FILE, "history/$timeStr.xml" ) || warn "Couldn't read from history history/$timeStr.xml\n";
   chop(my @history = <FILE> );
   close FILE;
 
@@ -128,7 +128,7 @@ sub getRainfall {
      $DEBUG && warn "NO history for $timeStr, using 0\n";
      return 0;
   }
-  open ( FILE, "history/$timeStr.xml" ) || warn "Couldn read from history history/$timeStr.xml\n";
+  open ( FILE, "history/$timeStr.xml" ) || warn "Couldn't read from history history/$timeStr.xml\n";
   chop(my @history = <FILE> );
   close FILE;
 
@@ -188,7 +188,7 @@ sub getCyclesToWater {
   return $cycles > 0 ? $cycles : 0;
 }
 
-sub adjustedForTempurature {
+sub adjustedForTemperature {
   my ( $adjustedRainfallCalculation, $meanTemp, $maxTemp ) = @_;
 
   ( $meanTemp > 73 ) && ($adjustedRainfallCalculation -= .2);

@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-
 use Test::More tests => 34;
 use weatherLib;
 use dateLib;
@@ -20,8 +19,8 @@ ok( !isRaining("Cloudy") );
 my $currentConditions = getCurrentConditions();
 isnt( $currentConditions, undef, "getCurrentConditions==$currentConditions");
 
-my $currentTempurature = getCurrentTempurature();
-isnt( $currentTempurature, undef, "getCurrentTempurature==$currentTempurature");
+my $currentTemperature = getCurrentTemperature();
+isnt( $currentTemperature, undef, "getCurrentTemperature==$currentTemperature");
 
 my $julFifth = 1373017410;
 my @actualRainFall = getPastWeekRainfall($julFifth);
@@ -47,11 +46,11 @@ is( getAdjustedRainfallCalculation( @expectedRainFall ), 0.585, "getAdjustedRain
 @expectedRainFall = ("0.10", "0.10", "0.00", "0.18", "0.00", "0.00", "0.66", "0.33");
 is( getAdjustedRainfallCalculation( @expectedRainFall ), 0.785, "getAdjustedRainfallCalculation==0.785" );
 
-is( adjustedForTempurature( 0.785, 70, 70 ), .785, "adjustedForTempurature==0.785" );
-is( adjustedForTempurature( 0.785, 75, 70 ), .585, "adjustedForTempurature==0.585" );
-is( adjustedForTempurature( 0.785, 70, 90 ), .585, "adjustedForTempurature==0.585" );
-is( adjustedForTempurature( 0.785, 75, 90 ), .385, "adjustedForTempurature==0.385" );
-is( adjustedForTempurature( 0.285, 75, 90 ), 0.00, "adjustedForTempurature==0.00" );
+is( adjustedForTemperature( 0.785, 70, 70 ), .785, "adjustedForTemperature==0.785" );
+is( adjustedForTemperature( 0.785, 75, 70 ), .585, "adjustedForTemperature==0.585" );
+is( adjustedForTemperature( 0.785, 70, 90 ), .585, "adjustedForTemperature==0.585" );
+is( adjustedForTemperature( 0.785, 75, 90 ), .385, "adjustedForTemperature==0.385" );
+is( adjustedForTemperature( 0.285, 75, 90 ), 0.00, "adjustedForTemperature==0.00" );
 
 ok( !moreThenEnoughRainfall( .1 ) , "moreThenEnoughRainfall = .1" );  
 ok( !moreThenEnoughRainfall( .7 ) , "moreThenEnoughRainfall = .7" );  

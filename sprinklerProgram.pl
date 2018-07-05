@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-
 use cycleSprinklers;
 use weatherLib;
 use dateLib;
@@ -7,7 +6,6 @@ use dateLib;
 $SIG{'INT'} = 'terminationHandler';
 $SIG{'ABRT'} = 'terminationHandler';
 $SIG{'TERM'} = 'terminationHandler';
-$SIG{'SEGV'} = 'terminationHandler';
 $SIG{'SEGV'} = 'terminationHandler';
 
 my $time = time;
@@ -24,7 +22,7 @@ if ( isRaining($currentConditions) ) {
 my @yesterdayTemps = getYesterdayTemps($time);
 my @pastWeekRainfall = getPastWeekRainfall($time);
 my $adjustedRainfallCalculation = getAdjustedRainfallCalculation( @pastWeekRainfall );
-$adjustedRainfallCalculation = adjustedForTempurature( $adjustedRainfallCalculation, @yesterdayTemps );
+$adjustedRainfallCalculation = adjustedForTemperature( $adjustedRainfallCalculation, @yesterdayTemps );
 print "Week RainFall: ", join(", ", @pastWeekRainfall), 
       " Mean/Max Temp: ", join("/", @yesterdayTemps),
       " calc: ", $adjustedRainfallCalculation, "\n";
@@ -49,7 +47,7 @@ print HISTORY $cyclesToWater, "\n";
 close HISTORY;
 
 sub terminationHandler {
-  print "Termination Signal Recieved - stopping\n";
+  print "Termination Signal Received - stopping\n";
   turnSprinklersOff();
   exit(-10);
 }
