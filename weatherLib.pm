@@ -1,64 +1,72 @@
 use dateLib;
 use POSIX qw(ceil);
+use DarkSky::API;
+use Data::Dumper;
+use JSON::XS;
 use sprinklerConfig;
 
 my $DEBUG = 0;
-my $command = "/usr/bin/wget --tries=1 -O -";
-my $saveCommand = "/usr/bin/wget --tries=1 ";
 
-sub getCurrentXml {
-    my $cmd = qq#$command "http://api.wunderground.com/api/# . $sprinklerConfig::apiKey . qq#/conditions/q/# . $sprinklerConfig::weatherLocation . qq#.xml" 2>&1#;
-    $DEBUG && print "CMD: $cmd\n";
-    chop( my @output = `$cmd` );
+sub getCurrentForcast {
+    my $forecast = DarkSky::API->new(
+        key       => $sprinklerConfig::apiKey,
+        longitude => $sprinklerConfig::weatherLongitude,
+        latitude  => $sprinklerConfig::weatherLatitude,
+        units     => "us",
+    );
 
-    return @output;
+    $DEBUG && print "DEBUG: FORCAST=" . Dumper($forecast);
+    return $forecast;
 }
 
-sub getYesterdayData {
+sub getPastData {
     my ( $time ) = @_;
 
-    my ($year, $month, $day) = getDayPrior( $time );
-    my $timeStr = sprintf("%04d%02d%02d", $year, $month, $day);
+    my ($year, $month, $day) = parseDate( $time );
+    my $fileTimeStr = sprintf("%04d%02d%02d", $year, $month, $day);
+    my $fileName = "history/$fileTimeStr.json";
 
-    if ( ! -f "history/$timeStr.json" ) {
-        my $cmd = qq#$saveCommand -O history/$timeStr.json  "http://api.wunderground.com/api/# . $sprinklerConfig::apiKey . qq#/yesterday/q/# . $sprinklerConfig::weatherHistoryLocation . qq#.json" 2>&1#;
-        $DEBUG && print "CMD: $cmd\n";
-        chop( my @output = `$cmd` );
-    }    
+    if ( ! -f $fileName ) {
+        my $forecast = DarkSky::API->new(
+            key       => $sprinklerConfig::apiKey,
+            longitude => $sprinklerConfig::weatherLongitude,
+            latitude  => $sprinklerConfig::weatherLatitude,
+            units     => "us",
+            time      => $time,
+        );
 
-    if ( ! -f "history/$timeStr.xml" ) {
-        my $cmd = qq#$saveCommand -O history/$timeStr.xml "http://api.wunderground.com/api/# . $sprinklerConfig::apiKey . qq#/yesterday/q/# . $sprinklerConfig::weatherHistoryLocation . qq#.xml" 2>&1#;
-        $DEBUG && print "CMD: $cmd\n";
-        chop( my @output = `$cmd` );
-    }    
+        $DEBUG && print "DEBUG: Wrtiing to file $fileName\n";
+        my $json = JSON::XS->new->canonical->pretty;
+        $json->convert_blessed([1]);
+        open my $fh, '>', $fileName || warn "WARN: Couldn't write to history $fileName\n";
+        print $fh $json->encode($forecast);
+        close $fh;
+
+        return $forecast;
+    }
+
+    $DEBUG && print "DEBUG: Reading from file $fileName\n";
+    my $coder = JSON::XS->new->ascii->pretty->allow_nonref;
+    open my $fh, '<', $fileName || warn "WARN: Couldn't read from history $fileName\n";
+    my $file_content = do { local $/; <$fh> };
+    close $fh;
+    my $forecast = $coder->decode ($file_content);
+
+    return $forecast;
 }
 
 sub getCurrentConditions {
-    my @output = &getCurrentXml();
-    return &parseCurrentConditions( @output );
-}
-
-sub parseCurrentConditions {
-    my $current = (grep {/<weather>/} @_)[0];
-    $DEBUG && print "CURRENT COND: " . $current . "\n";
-    $current =~ s/<[^>]*>//g;
-    $current =~ s/^\s*//g;
-    $current =~ s/\s*$//g;
+    my $forecast = &getCurrentForcast();
+    my $current = $forecast->{currently}->{summary};
+    $DEBUG && print "DEBUG: CURRENT COND: " . $current . "\n";
 
     return $current;
 }
 
 sub getCurrentTemperature {
-    my @output = &getCurrentXml();
-    return &parseCurrentTemperature( @output );
-}
-
-sub parseCurrentTemperature {
-    my $current = (grep {/<temp_f>/} @_)[0];
-    $DEBUG && print "CURRENT TEMP: " . $current . "\n";
-    $current =~ s/<[^>]*>//g;
-    $current =~ s/^\s*//g;
-    $current =~ s/\s*$//g;
+    my $forecast = &getCurrentForcast();
+    my $current = $forecast->{currently}->{temperature};
+    $DEBUG && print "DEBUG: CURRENT TEMP: " . $current . "\n";
 
     return 0 + $current;
 }
@@ -75,9 +83,9 @@ sub getPastWeekRainfall {
   my ( $time ) = @_;
   my @rainFall;
   
-  for $i ( 1 .. 8 ) {
-    $date = subtractDays( $time, $i );
-    $rainFall = getRainfall($date);
+  for my $i ( 1 .. 8 ) {
+    my $date = subtractDays( $time, $i );
+    my $rainFall = getRainfall($date);
     push @rainFall, $rainFall;
   }
 
@@ -86,34 +94,18 @@ sub getPastWeekRainfall {
 
 sub getYesterdayTemps {
   my ( $time ) = @_;
-  $date = subtractDays( $time, 1 );
+  my $date = subtractDays( $time, 1 );
   return getTemps( $date );
 }
 
 sub getTemps {
-  my ( $date ) = @_;
-  my ($year, $month, $day) = parseDate( $date );
-  my $timeStr = sprintf("%04d%02d%02d", $year, $month, $day);
+    my ( $time ) = @_;
 
-  if ( ! -f "history/$timeStr.xml" ) {
-     $DEBUG && warn "NO history for $timeStr, using 0\n";
-     return (0, 0);
-  }
-  open ( FILE, "history/$timeStr.xml" ) || warn "Couldn't read from history history/$timeStr.xml\n";
-  chop(my @history = <FILE> );
-  close FILE;
-
-  ## mean, max
-  my @temps = ( 0, 0 );
-  foreach $line ( @history ) {
-    $line =~ s/^\s+|\s+$//g ;
-    ##$DEBUG && print "LINE: $line\n";
-    if ( $line =~ m#<maxtempi>(.*)</maxtempi># ) {
-      $temps[1] = $1;
-    } elsif ( $line =~ m#<meantempi>(.*)</meantempi># ) {
-      $temps[0] = $1;
-    }
-  }
+    my @temps = ( 0, 0 );
+    my $history = getPastData($time);
+    $DEBUG && print "DEBUG: HISTORY: " . Dumper($history) ."\n";
+    $temps[0] = $history->{daily}->{data}[0]->{temperatureMin};
+    $temps[1] = $history->{daily}->{data}[0]->{temperatureMax};
 
   return @temps;
 }
@@ -121,38 +113,10 @@ sub getTemps {
 sub getRainfall {
   my ( $time ) = @_;
 
-  my ($year, $month, $day) = parseDate( $time );
-  my $timeStr = sprintf("%04d%02d%02d", $year, $month, $day);
-
-  if ( ! -f "history/$timeStr.xml" ) {
-     $DEBUG && warn "NO history for $timeStr, using 0\n";
-     return 0;
-  }
-  open ( FILE, "history/$timeStr.xml" ) || warn "Couldn't read from history history/$timeStr.xml\n";
-  chop(my @history = <FILE> );
-  close FILE;
-
-  my $summaryLineStart = 0;
-  foreach $line ( @history ) {
-    $line =~ s/^\s+|\s+$//g ;
-    ( $line =~ m#<summary># ) && last;
-    ( $line =~ m#<pretty># ) && $DEBUG && print "LINE($summaryLineStart): $line\n";
-    $summaryLineStart++;
-  }
-  @history = @history[$summaryLineStart .. $#history ];
-  $DEBUG && print "TRIMMING AT: $summaryLineStart\n";
-
-  my $precipitation = undef;
-  foreach $line ( @history ) {
-    $line =~ s/^\s+|\s+$//g ;
-    ##$DEBUG && print "LINE: $line\n";
-    if ( $line =~ m#<precipi>(.*)</precipi># ) {
-      $precipitation = $1;
-      last;
-    }
-  }
-
-  return $precipitation;
+  my $history = getPastData($time);
+  $DEBUG && print "DEBUG: HISTORY: " . Dumper($history) ."\n";
+  my $precipitationIntensity = $history->{daily}->{data}[0]->{precipIntensity};
+  return $precipitationIntensity * 24;
 }
 
 sub getAdjustedRainfallCalculation {
@@ -162,7 +126,7 @@ sub getAdjustedRainfallCalculation {
   my $weekRainFall = 0;
   my $dayNumber = 0;
   foreach my $rainFall ( @rainFall ) {
-    $DEBUG && print "Rainfall(day=$dayNumber): $rainFall\n";
+    $DEBUG && print "DEBUG: Rainfall(day=$dayNumber): $rainFall\n";
     $weekRainFall += $rainFall;
     ( $dayNumber < 3 ) && ($threeDayRainFall += $rainFall);
     $dayNumber++;
@@ -171,7 +135,7 @@ sub getAdjustedRainfallCalculation {
   my $weekPriorToThreeDaysRainFall = $weekRainFall - $threeDayRainFall;
   my $calculation = ($weekPriorToThreeDaysRainFall / 2) + ($threeDayRainFall);
 
-  $DEBUG && print "weekRainFall: " , $weekRainFall, " threeDayRainFall: ", $threeDayRainFall, " weekPriorToThreeDaysRainFall: ", $weekPriorToThreeDaysRainFall, " calculation:", $calculation, "\n";
+  $DEBUG && print "DEBUG: weekRainFall: " , $weekRainFall, " threeDayRainFall: ", $threeDayRainFall, " weekPriorToThreeDaysRainFall: ", $weekPriorToThreeDaysRainFall, " calculation:", $calculation, "\n";
   return $calculation;
 }
 
@@ -189,9 +153,9 @@ sub getCyclesToWater {
 }
 
 sub adjustedForTemperature {
-  my ( $adjustedRainfallCalculation, $meanTemp, $maxTemp ) = @_;
+  my ( $adjustedRainfallCalculation, $minTemp, $maxTemp ) = @_;
 
-  ( $meanTemp > 73 ) && ($adjustedRainfallCalculation -= .2);
+  ( $minTemp > 70 ) && ($adjustedRainfallCalculation -= .2);
   ( $maxTemp > 86 ) && ($adjustedRainfallCalculation -= .2);
   return $adjustedRainfallCalculation > 0 ? $adjustedRainfallCalculation : 0;
 }

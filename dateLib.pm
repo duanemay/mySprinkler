@@ -2,9 +2,9 @@ my $DEBUG = 0;
 
 sub getDateString {
   my ( $time ) = @_;
-  $DEBUG && print "TIME: $time, ";
+  $DEBUG && print "DEBUG: TIME: $time, ";
   my ($sec,$min,$hour,$mday,$month,$year,$wday,$yday,$isdst) = localtime($time);
-  $DEBUG && print "PASRED(sec,min,hour,mday,month,year,wday,yday,isdst)", join(":", $sec,$min,$hour,$mday,$month,$year,$wday,$yday,$isdst);
+  $DEBUG && print "DEBUG: PASRED(sec,min,hour,mday,month,year,wday,yday,isdst)", join(":", $sec,$min,$hour,$mday,$month,$year,$wday,$yday,$isdst);
   $month += 1;
   $year += 1900;
   $DEBUG && print "  ADJUSTED: $month,$year";
@@ -24,7 +24,7 @@ sub isOddDay() {
 sub parseDate {
   my ( $time ) = @_;
 
-  ($year, $month, $mday) = (localtime($time))[5,4,3];
+  my ($year, $month, $mday) = (localtime($time))[5,4,3];
   $year += 1900;
   $month += 1;
 

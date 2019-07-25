@@ -9,7 +9,6 @@ $SIG{'TERM'} = 'terminationHandler';
 $SIG{'SEGV'} = 'terminationHandler';
 
 my $time = time;
-getYesterdayData($time);
 if ( &isOddDay($time) ) {
   die getDateString($time), " -  odd day exiting\n";
 }
@@ -37,7 +36,7 @@ print getDateString($time), " - Watering $cyclesToWater\n";
 
 &cycleSprinklers($cyclesToWater);
 
-my $time = time;
+$time = time;
 print getDateString($time), " - stopping\n";
 
 my ($year, $month, $day) = parseDate( $time );

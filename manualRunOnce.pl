@@ -14,7 +14,7 @@ $cycleSprinklers::DEBUG = 1;
 
 &cycleSprinklers(1);
 
-my $time = time;
+$time = time;
 print getDateString($time), " - stopping\n";
 
 

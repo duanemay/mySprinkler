@@ -11,15 +11,13 @@ $SIG{'SEGV'} = 'terminationHandler';
 
 my $time = time;
 
-my @currentConditionXml = getCurrentXml();
-
-my $currentConditions = parseCurrentConditions(@currentConditionXml);
+my $currentConditions = getCurrentConditions();
 if ( isRaining($currentConditions) ) {
     die getDateString($time), " - Cond: $currentConditions - Rain: No Sprinklers\n";
 } 
 print  getDateString($time), " - Current:$currentConditions\n";
 
-my $currentTemperature = parseCurrentTemperature(@currentConditionXml);
+my $currentTemperature = getCurrentTemperature();
 if ( $currentTemperature < $sprinklerConfig::coolDownThreshold ) {
     die getDateString($time), " - Temp: $currentTemperature - Cool: No Sprinklers\n";
 } 
@@ -29,7 +27,7 @@ print  getDateString($time), " - Current:$currentTemperature > Threshold: ", $sp
 
 &cycleSprinklers($cyclesToWater);
 
-my $time = time;
+$time = time;
 print getDateString($time), " - stopping\n";
 
 sub terminationHandler {

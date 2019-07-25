@@ -6,10 +6,10 @@ my $secondsPerMinute = 60;
 # Load Config from SprinklerConfig file
 my $numberZones = $sprinklerConfig::numberZones;
 my @minutesToRunPerZone = @sprinklerConfig::minutesToRunPerZone;
-$secondsDelayBetweenZones = $sprinklerConfig::secondsDelayBetweenZones;
-$baseUrl = $sprinklerConfig::baseUrl;
+my $secondsDelayBetweenZones = $sprinklerConfig::secondsDelayBetweenZones;
+my $baseUrl = $sprinklerConfig::baseUrl;
 
-if ( $DEBUG ) {
+if ( $DEBUG > 0 ) {
   $secondsPerMinute = 2;
   $secondsDelayBetweenZones = 2;
 }
