@@ -1,0 +1,52 @@
+{
+  "queryCost": 1,
+  "latitude": 42.4738,
+  "longitude": -83.5505,
+  "resolvedAddress": "AU419",
+  "address": "AU419",
+  "timezone": "America/Detroit",
+  "tzoffset": -4.0,
+  "days": [
+    {
+      "datetime": "2013-06-28",
+      "datetimeEpoch": 1372392000,
+      "tempmax": 75.6,
+      "tempmin": 64.5,
+      "temp": 69.4,
+      "feelslikemax": 75.6,
+      "feelslikemin": 64.5,
+      "feelslike": 69.4,
+      "dew": 64.8,
+      "humidity": 86.0,
+      "precip": 0.499,
+      "precipprob": 100.0,
+      "precipcover": 100.0,
+      "preciptype": [
+        "rain"
+      ],
+      "snow": null,
+      "snowdepth": null,
+      "windgust": null,
+      "windspeed": 11.9,
+      "winddir": 314.2,
+      "pressure": null,
+      "cloudcover": 51.5,
+      "visibility": null,
+      "solarradiation": 211.2,
+      "solarenergy": 18.2,
+      "uvindex": 7.0,
+      "sunrise": "05:59:29",
+      "sunriseEpoch": 1372413569,
+      "sunset": "21:15:27",
+      "sunsetEpoch": 1372468527,
+      "moonphase": 0.67,
+      "conditions": "Rain, Partially cloudy",
+      "description": "Becoming cloudy in the afternoon with a chance of rain throughout the day.",
+      "icon": "rain",
+      "stations": [
+        "remote"
+      ],
+      "source": "obs"
+    }
+  ]
+}

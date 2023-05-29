@@ -1,11 +1,12 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
+use strict;
+use warnings;
 use Test::More tests => 36;
 use weatherLib;
 use dateLib;
 use sprinklerConfig;
 
-$sprinklerConfig::weatherLatitude = "42.446523";
-$sprinklerConfig::weatherLongitude = "-83.5019765";
+$sprinklerConfig::weatherLocation = "AU419";
 
 ok( isRaining("Heavy Rain") );
 ok( isRaining("Storm") );
@@ -26,12 +27,13 @@ isnt( $currentTemperature, undef, "getCurrentTemperature==$currentTemperature");
 
 ## new version
 my $julFifth = 1373017410;
-is( getRainfall($julFifth), 0.0072, "getRainfall==0.0072" );
+is( getRainfall($julFifth), 0.179, "getRainfall==0.179" );
 my $julFirst = subtractDays( $julFifth, 4 );
-is( getRainfall($julFirst), 0.2664, "getRainfall==0.2664" );
+is( getRainfall($julFirst), 0.257, "getRainfall==0.257" );
 
 my @actualRainFall = getPastWeekRainfall($julFifth);
-@expectedRainFall = (0, 0, 0, 0.2664, 0, 0.0168, 0.2208, 0.8544);
+## if it is July 5th, then the last 8 days are: Jul 4, Jul 3, Jul 2, Jul 1, Jun 30, Jun 29, Jun 28, Jun 27
+my @expectedRainFall = (0.02, 0.02, 0.386, 0.257, 0.024, 0.277, 0.499, 0.623);
 is( $#actualRainFall, 7, "Rainfall: " . join(", ", @actualRainFall) );
 is_deeply( \@actualRainFall, \@expectedRainFall );
 
@@ -42,11 +44,11 @@ is( getAdjustedRainfallCalculation( @expectedRainFall ), 0.585, "getAdjustedRain
 is( getAdjustedRainfallCalculation( @expectedRainFall ), 0.785, "getAdjustedRainfallCalculation==0.785" );
 
 ## min temp
-is( (getTemps($julFirst))[0], 59.82, "getMinTemps==59.82" );
-is( (getTemps($julFifth))[0], 69.28, "getMinTemps==69.28" );
+is( (getTemps($julFirst))[0], 58.0, "getMinTemps==58.0" );
+is( (getTemps($julFifth))[0], 67.9, "getMinTemps==67.9" );
 ## max temp
-is( (getTemps($julFirst))[1], 66.59, "getMaxTemps==66.59" );
-is( (getTemps($julFifth))[1], 81.98, "getMaxTemps==81.98" );
+is( (getTemps($julFirst))[1], 70.4, "getMaxTemps==70.4" );
+is( (getTemps($julFifth))[1], 80.3, "getMaxTemps==80.3" );
 
 is( adjustedForTemperature( 0.785, 70, 70 ), .785, "adjustedForTemperature==0.785" );
 is( adjustedForTemperature( 0.785, 75, 70 ), .585, "adjustedForTemperature==0.585" );

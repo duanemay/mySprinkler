@@ -1,6 +1,6 @@
 package sprinklerConfig;
 
-# Dark Sky API Key and location
+# Visual Crossing API Key and location
 $apiKey = "ENTER YOUR API KEY HERE";
 $weatherLatitude = "ENTER YOUR LATITUDE HERE";
 $weatherLongitude = "ENTER YOUR LONGITUDE HERE";
