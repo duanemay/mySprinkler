@@ -8,6 +8,7 @@
 *.o
 *.pm.tdy
 *.bs
+history/
 
 # Devel::Cover
 cover_db/

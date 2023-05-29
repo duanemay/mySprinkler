@@ -38,12 +38,17 @@ Cycle once through all zones for testing
 
 ## Tests
 
-Tests run with 
+Tests run with:
 ```bash
-prove t/*
+prove -I. 
 ```
+Create a `history` dir to not have to re-download the weather data each time.
 
-or keep test history in the test dir with 
+or use the history in the test dir with:
+```bash
+prove -I.. -r .
+```
+or:
 ```bash
 ./testAll.sh
 ```
